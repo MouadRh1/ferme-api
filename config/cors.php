@@ -1,26 +1,30 @@
 <?php
 
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'register', 'logout', '*'],
-    
-    'allowed_methods' => ['*'],
-    
+    'paths' => ['api/*'],  // Ne mettez pas '*', spécifiez les chemins
+
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+
     'allowed_origins' => [
-        'http://localhost:3000',
         'http://localhost:5173',
-        'http://localhost:5174',
-        'http://localhost:8000',
+        'http://localhost:3000',
         'http://127.0.0.1:5173',
-        'https://ferme-api-production.up.railway.app',
     ],
-    
+
     'allowed_origins_patterns' => [],
-    
-    'allowed_headers' => ['*'],
-    
+
+    'allowed_headers' => [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+        'X-CSRF-TOKEN'
+    ],
+
     'exposed_headers' => [],
-    
+
     'max_age' => 3600,
-    
-    'supports_credentials' => true,
+
+    'supports_credentials' => false,  // Mettez false temporairement
 ];
