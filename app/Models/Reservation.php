@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Reservation extends Model
 {
@@ -37,9 +38,15 @@ class Reservation extends Model
     // ── Accesseur : URL de la preuve de paiement ────
     public function getPaymentProofUrlAttribute(): ?string
     {
-        return $this->payment_proof
-            ? asset('storage/' . $this->payment_proof)
-            : null;
+        if (!$this->payment_proof) {
+            return null;
+        }
+
+        // Extraire juste le nom du fichier
+        $filename = basename($this->payment_proof);
+
+        // Utiliser la route web au lieu de storage
+        return url('/proofs/' . $filename);
     }
 
     // ── Relations ────────────────────────────────────
