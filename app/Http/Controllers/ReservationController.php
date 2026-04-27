@@ -5,17 +5,21 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreReservationRequest;
 use App\Models\Reservation;
 use App\Models\Farm;
+use App\Services\MailService;
 use App\Services\PaymentProofService;
 use App\Services\ReservationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
 
 class ReservationController extends Controller
 {
     // Injection du service dans le constructeur
     public function __construct(
         protected ReservationService $reservationService,
-        protected PaymentProofService $proofService
+        protected PaymentProofService $proofService,
+        protected MailService $mailService
     ) {}
 
     // ─────────────────────────────────────────────────
@@ -118,6 +122,12 @@ class ReservationController extends Controller
 
         $reservation->load(['user', 'farm']);
 
+        try {
+            $this->mailService->sendReservationEmails($reservation);
+        } catch (\Exception $e) {
+            Log::warning('Emails non envoyés: ' . $e->getMessage());
+            // Ne pas bloquer la réponse si mail échoue
+        }
         return response()->json([
             'message'     => 'Réservation créée avec succès.',
             'reservation' => $this->formatReservation($reservation),

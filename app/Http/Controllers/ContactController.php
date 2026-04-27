@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
+    public function __construct(
+        protected MailService $mailService
+    ) {}
     // ─────────────────────────────────────────────────
     // POST /api/contact (public)
     // ─────────────────────────────────────────────────
@@ -55,7 +59,7 @@ class ContactController extends Controller
     public function index()
     {
         $contacts = Contact::orderBy('created_at', 'desc')->get();
-        
+
         return response()->json([
             'contacts' => $contacts,
             'unread_count' => Contact::where('is_read', false)->count()
@@ -68,12 +72,12 @@ class ContactController extends Controller
     public function show($id)
     {
         $contact = Contact::findOrFail($id);
-        
+
         // Marquer comme lu si pas déjà fait
         if (!$contact->is_read) {
             $contact->markAsRead();
         }
-        
+
         return response()->json($contact);
     }
 
@@ -84,7 +88,7 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($id);
         $contact->delete();
-        
+
         return response()->json(['message' => 'Message supprimé avec succès']);
     }
 
@@ -93,26 +97,30 @@ class ContactController extends Controller
     // ─────────────────────────────────────────────────
     public function reply(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'reply_message' => 'required|string|min:10',
+        $request->validate([
+            'reply_message' => 'required|string|min:5',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
 
         $contact = Contact::findOrFail($id);
-        
-        // Envoyer l'email de réponse
-        // Mail::to($contact->email)->send(new ContactReply($contact, $request->reply_message));
-        
-        $contact->update([
-            'status' => 'replied',
-        ]);
+
+        // 👇 Envoyer l'email de réponse
+        try {
+            $this->mailService->sendContactReply(
+                $contact,
+                $request->reply_message
+            );
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
+        // Marquer comme répondu
+        $contact->update(['status' => 'replied']);
 
         return response()->json([
-            'message' => 'Réponse envoyée avec succès',
-            'contact' => $contact
+            'message' => 'Réponse envoyée avec succès à ' . $contact->email,
+            'contact' => $contact,
         ]);
     }
 

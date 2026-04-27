@@ -6,15 +6,18 @@ use App\Models\Reservation;
 use App\Services\StripeService;
 use App\Services\ReservationService;
 use App\Http\Requests\StoreReservationRequest;
+use App\Services\MailService;
 use App\Services\PaymentProofService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class StripeController extends Controller
 {
     public function __construct(
         protected StripeService      $stripeService,
         protected ReservationService $reservationService,
-        protected PaymentProofService $proofService
+        protected PaymentProofService $proofService,
+        protected MailService         $mailService
     ) {}
 
     // ─────────────────────────────────────────────────
@@ -101,7 +104,11 @@ class StripeController extends Controller
                 'payment_status' => 'paid',
                 'status'         => 'confirmed',
             ]);
-
+            try {
+                $this->mailService->sendReservationEmails($reservation->fresh(['user', 'farm']));
+            } catch (\Exception $e) {
+                Log::warning('Email non envoyé: ' . $e->getMessage());
+            }
             return response()->json([
                 'message'     => 'Paiement confirmé ! Réservation validée.',
                 'reservation' => $reservation->fresh(['user', 'farm']),
@@ -113,6 +120,7 @@ class StripeController extends Controller
             'payment_status' => 'rejected',
             'status'         => 'cancelled',
         ]);
+
 
         return response()->json([
             'message' => 'Paiement échoué. Réservation annulée.',
