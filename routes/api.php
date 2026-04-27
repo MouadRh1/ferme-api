@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FarmController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\PaymentProofController;
@@ -16,6 +17,7 @@ Route::post('/login',    [AuthController::class, 'login']);
 Route::get('/farm',      [FarmController::class, 'index']);
 Route::get('/gallery',           [GalleryController::class, 'index']);
 Route::post('/gallery/{gallery}/like', [GalleryController::class, 'like']);
+Route::post('/contact', [ContactController::class, 'store']);
 
 // Dates bloquées (calendrier public)
 Route::get('/reservations/booked-dates', [ReservationController::class, 'bookedDates']);
@@ -69,9 +71,18 @@ Route::middleware('auth:sanctum')->group(function () {
             '/reservations/{reservation}/proof',
             [PaymentProofController::class, 'destroy']
         );
+
+        //Gallery admin
         Route::get('/admin/gallery',              [GalleryController::class, 'adminIndex']);
         Route::post('/admin/gallery',             [GalleryController::class, 'store']);
         Route::post('/admin/gallery/{gallery}',   [GalleryController::class, 'update']); // POST car multipart
         Route::delete('/admin/gallery/{gallery}', [GalleryController::class, 'destroy']);
+        // contact admin
+
+        Route::get('/admin/contacts', [ContactController::class, 'index']);
+        Route::get('/admin/contacts/{id}', [ContactController::class, 'show']);
+        Route::delete('/admin/contacts/{id}', [ContactController::class, 'destroy']);
+        Route::post('/admin/contacts/{id}/reply', [ContactController::class, 'reply']);
+        Route::get('/admin/contacts/unread/count', [ContactController::class, 'unreadCount']);
     });
 });
