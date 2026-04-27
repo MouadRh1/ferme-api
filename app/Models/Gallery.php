@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Gallery extends Model
 {
@@ -23,9 +24,14 @@ class Gallery extends Model
         'order'      => 'integer',
     ];
 
-    // URL publique de l'image
+    // URL publique de l'image - Version corrigée
     public function getImageUrlAttribute(): string
     {
-        return asset('storage/' . $this->image_path);
+        if (!$this->image_path) {
+            return '';
+        }
+        
+        // Utiliser Storage::url au lieu de asset
+        return Storage::disk('public')->url($this->image_path);
     }
 }
