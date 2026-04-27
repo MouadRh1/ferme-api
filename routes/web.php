@@ -57,3 +57,27 @@ Route::get('/debug-proofs', function () {
 
     return response()->json($files);
 });
+Route::get('/gallery-images/{filename}', function ($filename) {
+    $filename = basename($filename);
+
+    // Chercher le fichier dans le dossier gallery
+    $disk = Storage::disk('public');
+    $path = 'gallery/' . $filename;
+
+    if (!$disk->exists($path)) {
+        // Essaye sans le dossier gallery
+        $path = $filename;
+        if (!$disk->exists($path)) {
+            \Log::warning('Gallery image not found: ' . $filename);
+            abort(404, 'Image non trouvée');
+        }
+    }
+
+    $file = $disk->get($path);
+    $mime = $disk->mimeType($path);
+
+    return response($file, 200)
+        ->header('Content-Type', $mime)
+        ->header('Cache-Control', 'public, max-age=86400')
+        ->header('Access-Control-Allow-Origin', '*');
+})->where('filename', '.*\.(png|jpg|jpeg|gif|webp)$');

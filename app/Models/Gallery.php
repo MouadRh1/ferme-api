@@ -24,14 +24,17 @@ class Gallery extends Model
         'order'      => 'integer',
     ];
 
-    // URL publique de l'image - Version corrigée
+    // URL publique de l'image - Version corrigée pour Railway
     public function getImageUrlAttribute(): string
     {
         if (!$this->image_path) {
             return '';
         }
         
-        // Utiliser Storage::url au lieu de asset
-        return Storage::disk('public')->url($this->image_path);
+        // Extraire juste le nom du fichier
+        $filename = basename($this->image_path);
+        
+        // Utiliser la route personnalisée au lieu de Storage::url
+        return url('/gallery-images/' . $filename);
     }
 }
