@@ -57,7 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('admin')->group(function () {
 
         // Gestion ferme
-        Route::put('/farm/{farm}', [FarmController::class, 'update']);
+        Route::put('/farm', [FarmController::class, 'update']);
 
         // Gestion réservations admin
         Route::put('/reservations/{reservation}/status', [ReservationController::class, 'updateStatus']);
