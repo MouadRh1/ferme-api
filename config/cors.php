@@ -10,7 +10,7 @@ return [
         'http://localhost:3000',
         'http://127.0.0.1:5173',
         'https://khadijaaferme.vercel.app',
-        'https://floralwhite-goldfish-966361.hostingersite.com/',
+        'https://floralwhite-goldfish-966361.hostingersite.com',
     ],
 
     'allowed_origins_patterns' => [],
